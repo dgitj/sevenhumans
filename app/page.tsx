@@ -1,4 +1,14 @@
-export default function OfflineCareers() {
+import { supabase } from '@/lib/supabase'
+export const revalidate = 0; // Wichtig: Damit neue Syncs sofort erscheinen
+
+export default async function fflineCareers() {
+  // Wir holen uns die aktuellsten 4-6 Jobs für den Feed am Ende
+  const { data: jobs } = await supabase
+    .from('jobs')
+    .select('*')
+    .order('created_at', {ascending: false })
+    .limit(4);
+
   return (
     <div className="relative min-h-screen bg-[#04080f] font-sans text-slate-300 selection:bg-teal-500/30 overflow-x-hidden">
       
@@ -116,6 +126,55 @@ export default function OfflineCareers() {
           ))}
         </div>
       </section>
+
+      <section className="bg-slate-50 py-16 px-6 border-t border-slate-200">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900">Aktuelle Offline-Chancen</h2>
+              <p className="text-slate-500 mt-1">Frisch aus der Datenbank für Deutschland</p>
+            </div>
+            <div className="hidden md:block h-1 w-24 bg-emerald-500 rounded"></div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {jobs?.map((job) => (
+              <div key={job.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded uppercase">
+                      {job.tags?.[0] || 'Handwerk'}
+                    </span>
+                    <span className="text-xs text-slate-400">📍 {job.location}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">
+                    {job.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-3">{job.company}</p>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
+                  <span className="font-bold text-slate-900 text-sm">{job.salary_range || 'Auf Anfrage'}</span>
+                  <a 
+                    href={job.redirect_url} 
+                    target="_blank" 
+                    className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 underline tracking-wide"
+                  >
+                    DETAILS ANSEHEN →
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {(!jobs || jobs.length === 0) && (
+            <div className="text-center py-10 bg-white rounded-2xl border-2 border-dashed border-slate-200 text-slate-400">
+              Gerade werden neue Jobs synchronisiert...
+            </div>
+          )}
+        </div>
+      </section>
+
 
       {/* Footer */}
       <footer className="px-8 py-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">

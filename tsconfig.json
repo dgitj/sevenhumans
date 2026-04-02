@@ -20,7 +20,12 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    /* HIER MUSS ES REIN */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": [
     "next-env.d.ts",
