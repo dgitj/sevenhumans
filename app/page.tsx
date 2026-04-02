@@ -106,7 +106,7 @@ export default function OfflineCareers() {
 
       {/* Categories Section */}
       <section className="py-20 px-8 max-w-5xl mx-auto border-t border-white/5">
-        <h2 className="font-serif text-3xl text-white mb-10 tracking-tight">Work that <span className="italic opacity-60">endures.</span></h2>
+        <h2 className="font-serif text-3xl text-white mb-10 tracking-tight">Discover AI-Safe Jobs in the <span className="italic opacity-60">Real World.</span></h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {['Forestry & Land', 'Healthcare', 'Trades & Craft'].map((cat) => (
             <div key={cat} className="group p-6 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-teal-500/[0.03] hover:border-teal-500/20 transition-all cursor-pointer">
