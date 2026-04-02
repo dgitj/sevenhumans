@@ -7,9 +7,10 @@ export default async function fflineCareers() {
     .from('jobs')
     .select('*')
     .order('created_at', {ascending: false })
-    .limit(4);
+    .limit(10);
 
   return (
+
     <div className="relative min-h-screen bg-[#04080f] font-sans text-slate-300 selection:bg-teal-500/30 overflow-x-hidden">
       
       {/* Background Glows */}
@@ -26,6 +27,11 @@ export default async function fflineCareers() {
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-teal-500">Launching 2026</span>
         </div>
       </nav>
+
+      <div className="bg-yellow-100 text-yellow-800 text-center py-2 text-xs font-bold uppercase tracking-widest">
+  🚧 Testumgebung: Diese Seite ist nicht öffentlich und befindet sich im privaten Aufbau 🚧
+    </div>
+    
 
         <section className="relative pt-24 pb-16 px-8 max-w-5xl mx-auto">
     <h1 className="font-serif text-5xl md:text-7xl leading-[1.1] tracking-tight mb-12">
