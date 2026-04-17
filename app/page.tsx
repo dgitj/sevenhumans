@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase'
-import { Trees, ShieldCheck, MapPin, ExternalLink, Sparkles, Search, PawPrint, UserPlus } from 'lucide-react'
+import { Trees, ShieldCheck, MapPin, ExternalLink, Sparkles, Search, PawPrint, UserPlus, Anchor } from 'lucide-react'
 import Image from 'next/image'
 
 export const revalidate = 0;
 
-// Manuelle Unicorn Jobs (werden in den Feed gemischt oder stehen am Anfang)
+// Manuelle Unicorn Jobs
 const unicornJobs = [
   {
     id: 'u1',
@@ -25,6 +25,16 @@ const unicornJobs = [
     isUnicorn: true,
     nature_score: 10,
     ai_resistance_score: 9,
+  },
+  {
+    id: 'u3',
+    title: 'Deckhand on a Tall Ship',
+    location: 'North Atlantic / Caribbean',
+    image: '/images/ship.jpg',
+    summary: 'Feel the tension of the ropes and the weight of the wind. A workspace that moves with the ocean, far beyond any signal.',
+    isUnicorn: true,
+    nature_score: 10,
+    ai_resistance_score: 10,
   }
 ];
 
@@ -39,7 +49,7 @@ export default async function OfflineCareers() {
   return (
     <div className="relative min-h-screen bg-[#020408] font-sans text-slate-300 selection:bg-teal-500/30">
       
-      {/* Sanfter Background-Verlauf über die gesamte Seite */}
+      {/* Sanfter Background-Verlauf */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#020408] via-[#0a0f1a] to-[#111827] pointer-events-none" />
 
       {/* Navigation */}
@@ -85,11 +95,11 @@ export default async function OfflineCareers() {
         </div>
       </header>
 
-      {/* Job Feed - Fließender Übergang */}
+      {/* Job Feed */}
       <main className="relative z-10 px-8 py-20 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           
-          {/* Unicorns first */}
+          {/* Unicorns */}
           {unicornJobs.map((job) => (
             <div key={job.id} className="group relative bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden hover:border-amber-500/30 transition-all duration-500 shadow-2xl flex flex-col h-[500px]">
               <Image src={job.image} alt={job.title} fill className="object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
@@ -165,7 +175,6 @@ export default async function OfflineCareers() {
         </div>
       </main>
 
-      {/* Simple Footer */}
       <footer className="relative z-10 px-8 py-20 border-t border-white/5 text-center">
         <div className="font-serif text-lg text-white mb-4 italic">Offline Careers</div>
         <div className="font-mono text-[9px] uppercase tracking-[0.5em] text-slate-600">Built for the next era of human work.</div>
