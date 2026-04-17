@@ -1,73 +1,68 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Wir greifen exakt die Namen ab, die in deiner .env.local stehen
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export async function fetchAndSyncJobs() {
-  const appId = process.env.ADZUNA_APP_ID;
-  const appKey = process.env.ADZUNA_APP_KEY;
-  const country = "de"; 
-  
-  // Deine Liste an "Offline"-Berufen
-  const keywords = [
-    "Gärtner", 
-    "Schreiner", 
-    "Elektriker", 
-    "Pflegefachkraft", 
-    "Forstwirt", 
-    "Handwerk"
-  ];
+if (!supabaseUrl || !supabaseKey) {
+  console.error("❌ Fehler: Umgebungsvariablen nicht gefunden!");
+  console.error("URL:", supabaseUrl ? "Vorhanden" : "FEHLT");
+  console.error("Key:", supabaseKey ? "Vorhanden" : "FEHLT");
+  process.exit(1);
+}
 
-  for (const word of keywords) {
-    console.log(`🔎 Suche nach: ${word}...`);
+const supabase = createClient(supabaseUrl, supabaseKey)
+const ADZUNA_APP_ID = process.env.ADZUNA_APP_ID;
+const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;
+
+// Konfiguration der Fokus-Städte
+const TARGET_LOCATIONS = [
+  { city: 'Berlin', country: 'de' },
+  { city: 'London', country: 'gb' },
+  { city: 'New York', country: 'us' }
+];
+
+export async function syncGlobalJobs() {
+  for (const loc of TARGET_LOCATIONS) {
+    console.log(`Starte Sync für ${loc.city}...`);
     
-    // Wir encoden das Wort für die URL
-    const query = encodeURIComponent(word);
-    const url = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?app_id=${appId}&app_key=${appKey}&results_per_page=10&what=${query}&content-type=application/json`;
+    // 1. API Abfrage (Suche nach Handwerk/Outdoor für Techie-Aussteiger)
+    const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=20&what=handwerk%20outdoor%20schreiner%20garten&where=${loc.city}`;
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
+    const res = await fetch(url);
+    const data = await res.json();
 
-      if (!data.results || data.results.length === 0) {
-        console.log(`⚠️ Keine Jobs für "${word}" gefunden.`);
-        continue; // Springe zum nächsten Wort in der Liste
-      }
+    if (!data.results) continue;
 
-      const formattedJobs = data.results.map((job: any) => ({
-        title: job.title.replace(/<\/?[^>]+(>|$)/g, ""),
+    for (const job of data.results) {
+      // 2. Daten für unser neues Schema transformieren
+      const { error } = await supabase.from('jobs').upsert({
+        title: job.title,
         company: job.company.display_name,
-        location: job.location?.display_name || "Deutschland",
-        description: job.description.replace(/<\/?[^>]+(>|$)/g, ""),
-        redirect_url: job.redirect_url,
-        salary_range: job.salary_min ? `€${job.salary_min.toLocaleString()}` : "Auf Anfrage", // Euro statt Pfund
-        stability_score: 98, // In DE sind diese Berufe extrem krisensicher
-        tags: [word, "Offline Karriere", "DE"]
-      }));
+        location: job.location.display_name,
+        description: job.description,
+        source_url: job.redirect_url,
+        city: loc.city,
+        country_code: loc.country,
+        currency: job.salary_currency || (loc.country === 'us' ? 'USD' : loc.country === 'gb' ? 'GBP' : 'EUR'),
+        original_source: 'adzuna',
+        is_processed: false, // Wichtig: Damit der Veredler-Agent weiß, dass er hier ran muss
+        is_published: true
+      }, { onConflict: 'source_url' }); // Verhindert Dubletten
 
-      const { error } = await supabase
-        .from('jobs')
-        .insert(formattedJobs);
-
-      if (error) {
-        console.error(`❌ Supabase Fehler bei "${word}":`, error.message);
-      } else {
-        console.log(`✅ ${formattedJobs.length} Jobs für "${word}" gespeichert.`);
-      }
-
-    } catch (err) {
-      console.error(`💥 Fehler beim Abrufen von "${word}":`, err);
+      if (error) console.error(`Fehler bei Job ${job.title}:`, error.message);
     }
-    
-    // Kleiner "Cooldown" (0.5 Sek), damit die API uns nicht wegen zu vielen Anfragen blockt
-    await new Promise(resolve => setTimeout(resolve, 500));
   }
-  
-  console.log("🏁 Alle Keywords verarbeitet!");
+  return { status: 'Sync abgeschlossen' };
 }
 
-if (require.main === module || !require.main) {
-  fetchAndSyncJobs();
-}
+// Am Ende von lib/syncJobs.ts
+(async () => {
+  console.log("🚀 Starte Sync-Prozess...");
+  try {
+    await syncGlobalJobs(); // Ersetze dies durch den Namen deiner Hauptfunktion
+    console.log("✅ Sync erfolgreich beendet.");
+  } catch (err) {
+    console.error("❌ Schwerwiegender Fehler beim Sync:", err);
+  }
+})();
