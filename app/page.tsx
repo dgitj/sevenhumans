@@ -63,7 +63,7 @@ export default async function OfflineCareers() {
 
       {/* Hero & Search */}
       <header className="relative z-10 pt-24 pb-12 px-8 max-w-5xl mx-auto">
-        <h1 className="font-serif text-6xl md:text-8xl text-white tracking-tighter leading-none mb-12">
+        <h1 className="font-serif text-6xl md:text-5xl text-white tracking-tighter leading-none mb-12">
           Stable jobs in an <br />
           <span className="text-slate-500 italic">accelerating world.</span>
         </h1>
