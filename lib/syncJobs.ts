@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseKey) {
   console.error("❌ Fehler: Umgebungsvariablen nicht gefunden!");
   console.error("URL:", supabaseUrl ? "Vorhanden" : "FEHLT");
   console.error("Key:", supabaseKey ? "Vorhanden" : "FEHLT");
-  process.exit(1);
+  throw new Error("Supabase Umgebungsvariablen fehlen");
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey)
@@ -17,52 +17,77 @@ const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;
 
 // Konfiguration der Fokus-Städte
 const TARGET_LOCATIONS = [
-  { city: 'Berlin', country: 'de' },
-  { city: 'London', country: 'gb' },
-  { city: 'New York', country: 'us' }
+  { city: 'San Francisco', country: 'us' }
 ];
+
+// Adzuna-Plan: 25 Hits/Minute, 250 Hits/Tag. Wir bleiben mit großem Sicherheitsabstand
+// darunter, da ein Sync-Lauf ruhig nur alle paar Tage stattfinden muss.
+const RESULTS_PER_PAGE = 50; // Adzuna-Maximum pro Seite
+const MAX_PAGES = 10; // Deckel: max. 10 Hits pro Stadt und Lauf (4% des Tagesbudgets)
+const REQUEST_DELAY_MS = 5000; // 12 Hits/Minute max. -> weit unter dem 25er-Limit
 
 export async function syncGlobalJobs() {
   for (const loc of TARGET_LOCATIONS) {
     console.log(`Starte Sync für ${loc.city}...`);
-    
-    // 1. API Abfrage (Suche nach Handwerk/Outdoor für Techie-Aussteiger)
-    const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=20&what=handwerk%20outdoor%20schreiner%20garten&where=${loc.city}`;
+    let synced = 0;
 
-    const res = await fetch(url);
-    const data = await res.json();
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      // 1. API Abfrage (Suche nach Handwerk/Outdoor für Techie-Aussteiger)
+      const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/${page}?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=${RESULTS_PER_PAGE}&what=carpenter%20outdoor%20landscaping%20trades&where=${loc.city}`;
 
-    if (!data.results) continue;
+      const res = await fetch(url);
 
-    for (const job of data.results) {
-      // 2. Daten für unser neues Schema transformieren
-      const { error } = await supabase.from('jobs').upsert({
-        title: job.title,
-        company: job.company.display_name,
-        location: job.location.display_name,
-        description: job.description,
-        source_url: job.redirect_url,
-        city: loc.city,
-        country_code: loc.country,
-        currency: job.salary_currency || (loc.country === 'us' ? 'USD' : loc.country === 'gb' ? 'GBP' : 'EUR'),
-        original_source: 'adzuna',
-        is_processed: false, // Wichtig: Damit der Veredler-Agent weiß, dass er hier ran muss
-        is_published: true
-      }, { onConflict: 'source_url' }); // Verhindert Dubletten
+      if (res.status === 429) {
+        console.error(`  Adzuna Rate-Limit erreicht (429) bei Seite ${page}, breche Sync für ${loc.city} ab.`);
+        break;
+      }
 
-      if (error) console.error(`Fehler bei Job ${job.title}:`, error.message);
+      const data = await res.json();
+
+      if (!data.results || data.results.length === 0) break;
+
+      for (const job of data.results) {
+        // 2. Daten für unser neues Schema transformieren
+        const { error } = await supabase.from('jobs').upsert({
+          title: job.title,
+          company: job.company.display_name,
+          location: job.location.display_name,
+          description: job.description,
+          source_url: job.redirect_url,
+          city: loc.city,
+          country_code: loc.country,
+          currency: job.salary_currency || (loc.country === 'us' ? 'USD' : loc.country === 'gb' ? 'GBP' : 'EUR'),
+          original_source: 'adzuna',
+          is_processed: true, // Veredler-Agent deaktiviert fürs Launch - Jobs gehen ungeveredelt live
+          is_published: true
+        }, { onConflict: 'source_url' }); // Verhindert Dubletten
+
+        if (error) console.error(`Fehler bei Job ${job.title}:`, error.message);
+        else synced++;
+      }
+
+      console.log(`  Seite ${page}: ${data.results.length} Jobs`);
+
+      if (data.results.length < RESULTS_PER_PAGE) break; // letzte Seite erreicht
+
+      await new Promise((r) => setTimeout(r, REQUEST_DELAY_MS)); // Rate-Limit schonen
     }
+
+    console.log(`${loc.city}: ${synced} Jobs synchronisiert.`);
   }
   return { status: 'Sync abgeschlossen' };
 }
 
-// Am Ende von lib/syncJobs.ts
-(async () => {
-  console.log("🚀 Starte Sync-Prozess...");
-  try {
-    await syncGlobalJobs(); // Ersetze dies durch den Namen deiner Hauptfunktion
-    console.log("✅ Sync erfolgreich beendet.");
-  } catch (err) {
-    console.error("❌ Schwerwiegender Fehler beim Sync:", err);
-  }
-})();
+// Nur beim direkten Ausführen dieser Datei laufen lassen (z.B. `tsx lib/syncJobs.ts`),
+// nicht beim Import durch die Cron-Route.
+if (require.main === module) {
+  (async () => {
+    console.log("🚀 Starte Sync-Prozess...");
+    try {
+      await syncGlobalJobs();
+      console.log("✅ Sync erfolgreich beendet.");
+    } catch (err) {
+      console.error("❌ Schwerwiegender Fehler beim Sync:", err);
+    }
+  })();
+}
