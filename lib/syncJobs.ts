@@ -5,15 +5,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 // service_role statt anon-Key: die "jobs"-Tabelle hat RLS aktiv und nur eine
 // SELECT-Policy für anon. Schreibvorgänge brauchen den privilegierten Key.
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("❌ Fehler: Umgebungsvariablen nicht gefunden!");
-  console.error("URL:", supabaseUrl ? "Vorhanden" : "FEHLT");
-  console.error("Service Role Key:", supabaseServiceKey ? "Vorhanden" : "FEHLT");
-  throw new Error("Supabase Umgebungsvariablen fehlen");
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const ADZUNA_APP_ID = process.env.ADZUNA_APP_ID;
 const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;
 
@@ -29,6 +20,15 @@ const MAX_PAGES = 10; // Deckel: max. 10 Hits pro Stadt und Lauf (4% des Tagesbu
 const REQUEST_DELAY_MS = 5000; // 12 Hits/Minute max. -> weit unter dem 25er-Limit
 
 export async function syncGlobalJobs() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("❌ Fehler: Umgebungsvariablen nicht gefunden!");
+    console.error("URL:", supabaseUrl ? "Vorhanden" : "FEHLT");
+    console.error("Service Role Key:", supabaseServiceKey ? "Vorhanden" : "FEHLT");
+    throw new Error("Supabase Umgebungsvariablen fehlen");
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
   for (const loc of TARGET_LOCATIONS) {
     console.log(`Starte Sync für ${loc.city}...`);
     let synced = 0;
