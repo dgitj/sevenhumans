@@ -2,16 +2,18 @@ import { createClient } from '@supabase/supabase-js'
 
 // Wir greifen exakt die Namen ab, die in deiner .env.local stehen
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// service_role statt anon-Key: die "jobs"-Tabelle hat RLS aktiv und nur eine
+// SELECT-Policy für anon. Schreibvorgänge brauchen den privilegierten Key.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl || !supabaseKey) {
+if (!supabaseUrl || !supabaseServiceKey) {
   console.error("❌ Fehler: Umgebungsvariablen nicht gefunden!");
   console.error("URL:", supabaseUrl ? "Vorhanden" : "FEHLT");
-  console.error("Key:", supabaseKey ? "Vorhanden" : "FEHLT");
+  console.error("Service Role Key:", supabaseServiceKey ? "Vorhanden" : "FEHLT");
   throw new Error("Supabase Umgebungsvariablen fehlen");
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const ADZUNA_APP_ID = process.env.ADZUNA_APP_ID;
 const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY;
 

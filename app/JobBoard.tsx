@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { MapPin, ExternalLink, Search, Sparkles } from 'lucide-react'
 import Image from 'next/image'
@@ -8,14 +8,19 @@ import Image from 'next/image'
 const SEARCH_DEBOUNCE_MS = 300
 const RESULTS_LIMIT = 30
 
+// Keine Bild-Spalte in der DB (statische Assets) - Zuordnung über den Titel.
+const UNICORN_IMAGES: Record<string, string> = {
+  'Lighthouse Keeper': '/images/lighthouse.jpg',
+  'Wilderness Ranger': '/images/ranger.jpg',
+  'Deckhand on a Tall Ship': '/images/ship.jpg',
+}
+
 export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: any[]; unicornJobs: any[] }) {
   const [query, setQuery] = useState('')
   const [jobs, setJobs] = useState(initialJobs)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    const term = query.trim()
-
+  const runSearch = useCallback(async (term: string) => {
     if (!term) {
       setJobs(initialJobs)
       setLoading(false)
@@ -23,35 +28,49 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
     }
 
     setLoading(true)
-    const timeout = setTimeout(async () => {
-      const { data } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('is_processed', true)
-        .or(`title.ilike.%${term}%,company.ilike.%${term}%,description.ilike.%${term}%`)
-        .order('created_at', { ascending: false })
-        .limit(RESULTS_LIMIT)
+    const { data } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('is_processed', true)
+      .eq('is_unicorn', false)
+      .eq('city', 'San Francisco')
+      .or(`title.ilike.%${term}%,company.ilike.%${term}%,description.ilike.%${term}%`)
+      .order('created_at', { ascending: false })
+      .limit(RESULTS_LIMIT)
 
-      setJobs(data ?? [])
-      setLoading(false)
-    }, SEARCH_DEBOUNCE_MS)
+    setJobs(data ?? [])
+    setLoading(false)
+  }, [initialJobs])
 
+  useEffect(() => {
+    const timeout = setTimeout(() => runSearch(query.trim()), SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timeout)
-  }, [query, initialJobs])
+  }, [query, runSearch])
 
   return (
     <>
       <div className="relative z-10 pb-12 px-8 max-w-5xl mx-auto">
-        <div className="relative group max-w-3xl">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-teal-500 transition-colors" size={20} />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for a physical future..."
-            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-teal-500/50 transition-all backdrop-blur-sm"
-          />
-        </div>
+        <form
+          onSubmit={(e) => { e.preventDefault(); runSearch(query.trim()) }}
+          className="flex gap-3 max-w-3xl"
+        >
+          <div className="relative group flex-1">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-teal-500 transition-colors" size={20} />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search for a physical future..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-teal-500/50 transition-all backdrop-blur-sm"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-8 rounded-2xl bg-teal-500/10 border border-teal-500/30 text-teal-400 font-semibold text-sm hover:bg-teal-500/20 transition-all"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
       <main className="relative z-10 px-8 py-20 max-w-7xl mx-auto">
@@ -60,7 +79,7 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
           {/* Unicorns */}
           {unicornJobs.map((job) => (
             <div key={job.id} className="group relative bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden hover:border-amber-500/30 transition-all duration-500 shadow-2xl flex flex-col h-[500px]">
-              <Image src={job.image} alt={job.title} fill className="object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
+              <Image src={UNICORN_IMAGES[job.title] ?? '/images/lighthouse.jpg'} alt={job.title} fill className="object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#020408] via-transparent to-transparent" />
 
               <div className="relative mt-auto p-8 space-y-4">
@@ -69,9 +88,9 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
                   <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest">Unicorn Opportunity</span>
                 </div>
                 <h3 className="text-3xl font-bold text-white tracking-tight">{job.title}</h3>
-                <p className="text-sm text-slate-300 italic line-clamp-2">"{job.summary}"</p>
+                <p className="text-sm text-slate-300 italic line-clamp-2">"{job.highlight_reason}"</p>
                 <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                   <button className="text-xs font-bold text-white underline">View Adventure</button>
+                   <a href={job.source_url} target="_blank" className="text-xs font-bold text-white underline">View Adventure</a>
                 </div>
               </div>
             </div>
