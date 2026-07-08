@@ -44,9 +44,18 @@ export default async function OfflineCareers() {
 
       <footer className="relative z-10 px-8 py-20 border-t border-white/5 text-center">
         <div className="font-serif text-lg text-white italic mb-6">Offline Careers</div>
-        <div className="flex justify-center gap-4 text-[10px] text-slate-600">
+        <div className="flex justify-center items-center gap-4 text-[10px] text-slate-600">
           <Link href="/impressum" className="hover:text-slate-400 transition-colors">Impressum</Link>
           <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy Policy</Link>
+          {/* Pflicht-Attribution laut Adzuna API ToS: min. 116x23px, "Jobs" + Logo verlinkt auf adzuna.com */}
+          <a
+            href="https://www.adzuna.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center min-w-[116px] h-[23px] hover:text-slate-400 transition-colors"
+          >
+            Jobs by Adzuna
+          </a>
         </div>
       </footer>
     </div>
