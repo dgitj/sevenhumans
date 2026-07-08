@@ -34,8 +34,9 @@ export async function syncGlobalJobs() {
     let synced = 0;
 
     for (let page = 1; page <= MAX_PAGES; page++) {
-      // 1. API Abfrage (Suche nach Handwerk/Outdoor für Techie-Aussteiger)
-      const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/${page}?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=${RESULTS_PER_PAGE}&what_or=carpenter%20outdoor%20landscaping%20trades&where=${loc.city}`;
+      // 1. API Abfrage (Trade & Construction Kategorie statt Keyword-Suche -
+      // Keywords lassen zu viel Bürojobs durch, die Kategorie ist verlässlicher.)
+      const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/${page}?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=${RESULTS_PER_PAGE}&category=trade-construction-jobs&where=${loc.city}`;
 
       const res = await fetch(url);
 
@@ -54,6 +55,7 @@ export async function syncGlobalJobs() {
           title: job.title,
           company: job.company.display_name,
           location: job.location.display_name,
+          category: job.category?.label || null,
           description: job.description,
           source_url: job.redirect_url,
           city: loc.city,
