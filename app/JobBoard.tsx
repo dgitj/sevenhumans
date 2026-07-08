@@ -60,7 +60,7 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for a physical future..."
+              placeholder="Search jobs..."
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-teal-500/50 transition-all backdrop-blur-sm"
             />
           </div>
@@ -90,7 +90,7 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
                 <h3 className="text-3xl font-bold text-white tracking-tight">{job.title}</h3>
                 <p className="text-sm text-slate-300 italic line-clamp-2">"{job.highlight_reason}"</p>
                 <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                   <a href={job.source_url} target="_blank" className="text-xs font-bold text-white underline">View Adventure</a>
+                   <a href={job.source_url} target="_blank" className="text-xs font-bold text-white underline">Learn more</a>
                 </div>
               </div>
             </div>

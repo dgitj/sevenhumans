@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 import JobBoard from './JobBoard'
 
 export const revalidate = 0;
@@ -27,12 +28,8 @@ export default async function OfflineCareers() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#020408] via-[#0a0f1a] to-[#111827] pointer-events-none" />
 
       {/* Navigation */}
-      <nav className="relative z-50 flex items-center justify-between px-8 py-6 border-b border-white/5 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-white rounded-sm rotate-45" />
-          <span className="font-serif text-lg tracking-tight text-white font-medium">Offline Careers</span>
-        </div>
-        <div className="text-[10px] font-mono tracking-[0.3em] text-slate-500 uppercase">Est. 2026</div>
+      <nav className="relative z-50 flex items-center px-8 py-6 border-b border-white/5 backdrop-blur-md">
+        <span className="font-serif text-lg tracking-tight text-white font-medium">Offline Careers</span>
       </nav>
 
       {/* Hero */}
@@ -46,8 +43,11 @@ export default async function OfflineCareers() {
       <JobBoard initialJobs={jobs ?? []} unicornJobs={unicornJobs ?? []} />
 
       <footer className="relative z-10 px-8 py-20 border-t border-white/5 text-center">
-        <div className="font-serif text-lg text-white mb-4 italic">Offline Careers</div>
-        <div className="font-mono text-[9px] uppercase tracking-[0.5em] text-slate-600">Built for the next era of human work.</div>
+        <div className="font-serif text-lg text-white italic mb-6">Offline Careers</div>
+        <div className="flex justify-center gap-4 text-[10px] text-slate-600">
+          <Link href="/impressum" className="hover:text-slate-400 transition-colors">Impressum</Link>
+          <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy Policy</Link>
+        </div>
       </footer>
     </div>
   )

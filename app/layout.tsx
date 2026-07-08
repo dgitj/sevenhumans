@@ -2,15 +2,6 @@ import './globals.css'
 export const metadata = {
   title: 'Offline Careers',
   description: 'Offline Jobs for Humans',
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: {
-      index: false,
-      follow: false,
-    }
-  },
 }
 
 export default function RootLayout({
