@@ -76,8 +76,8 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
       <main className="relative z-10 px-8 py-20 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-          {/* Unicorns */}
-          {unicornJobs.map((job) => (
+          {/* Featured/Adventure jobs - irrelevant to an active search, so hide them then */}
+          {!query.trim() && unicornJobs.map((job) => (
             <div key={job.id} className="group relative bg-slate-900/40 rounded-[2.5rem] border border-white/5 overflow-hidden hover:border-amber-500/30 transition-all duration-500 shadow-2xl flex flex-col h-[500px]">
               <Image src={UNICORN_IMAGES[job.title] ?? '/images/lighthouse.jpg'} alt={job.title} fill className="object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#020408] via-transparent to-transparent" />
@@ -85,7 +85,7 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
               <div className="relative mt-auto p-8 space-y-4">
                 <div className="flex items-center gap-2">
                   <Sparkles size={14} className="text-amber-500" />
-                  <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest">Unicorn Opportunity</span>
+                  <span className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-widest">Adventure Opportunity</span>
                 </div>
                 <h3 className="text-3xl font-bold text-white tracking-tight">{job.title}</h3>
                 <p className="text-sm text-slate-300 italic line-clamp-2">"{job.highlight_reason}"</p>
