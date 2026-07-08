@@ -106,7 +106,7 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
 
           {/* Regular Jobs */}
           {!loading && jobs.map((job) => (
-            <div key={job.id} className="group bg-white/[0.03] border border-white/5 rounded-[2rem] p-8 hover:bg-white/[0.06] transition-all duration-500 flex flex-col">
+            <a key={job.id} href={job.source_url} target="_blank" rel="noopener noreferrer" className="group bg-white/[0.03] border border-white/5 rounded-[2rem] p-8 hover:bg-white/[0.06] transition-all duration-500 flex flex-col">
               <div className="flex justify-between items-start mb-12 gap-3">
                 <span className="text-[10px] font-mono text-slate-500 border border-white/10 px-3 py-1 rounded-full truncate">
                   {job.location || job.city || 'INTL'}
@@ -125,12 +125,10 @@ export default function JobBoard({ initialJobs, unicornJobs }: { initialJobs: an
               <div className="mt-auto space-y-6">
                 <div className="flex items-center justify-between pt-6 border-t border-white/5">
                   <span className="text-xs font-mono text-slate-500">{job.category?.replace(/\s*Jobs$/i, '') || 'Trade & Construction'}</span>
-                  <a href={job.source_url} target="_blank" className="text-white hover:text-teal-400 transition-colors">
-                    <ExternalLink size={18} />
-                  </a>
+                  <ExternalLink size={18} className="text-white group-hover:text-teal-400 transition-colors" />
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </main>
