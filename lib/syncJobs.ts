@@ -35,7 +35,7 @@ export async function syncGlobalJobs() {
 
     for (let page = 1; page <= MAX_PAGES; page++) {
       // 1. API Abfrage (Suche nach Handwerk/Outdoor für Techie-Aussteiger)
-      const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/${page}?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=${RESULTS_PER_PAGE}&what=carpenter%20outdoor%20landscaping%20trades&where=${loc.city}`;
+      const url = `https://api.adzuna.com/v1/api/jobs/${loc.country}/search/${page}?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_APP_KEY}&results_per_page=${RESULTS_PER_PAGE}&what_or=carpenter%20outdoor%20landscaping%20trades&where=${loc.city}`;
 
       const res = await fetch(url);
 
