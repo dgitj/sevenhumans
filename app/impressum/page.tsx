@@ -12,7 +12,7 @@ export default function Impressum() {
 
           <section className="space-y-2">
             <h2 className="text-white font-semibold">Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)</h2>
-            <p>
+            <p className="text-slate-600">
               David Jin<br />
               Belfortstraße 4<br />
               60316 Karlsruhe, Deutschland
@@ -21,7 +21,7 @@ export default function Impressum() {
 
           <section className="space-y-2">
             <h2 className="text-white font-semibold">Kontakt</h2>
-            <p>E-Mail: [E-Mail-Adresse folgt]</p>
+            <p className="text-slate-600">E-Mail: [E-Mail-Adresse folgt]</p>
           </section>
 
           <section className="space-y-2">
@@ -37,7 +37,7 @@ export default function Impressum() {
 
           <section className="space-y-2">
             <h3 className="text-white font-semibold">Information according to § 5 DDG (German Digital Services Act)</h3>
-            <p>
+            <p className="text-slate-600">
               David Jin<br />
               Belfortstraße 4<br />
               60316 Karlsruhe, Germany
@@ -46,7 +46,7 @@ export default function Impressum() {
 
           <section className="space-y-2">
             <h3 className="text-white font-semibold">Contact</h3>
-            <p>Email: [email address pending]</p>
+            <p className="text-slate-600">Email: [email address pending]</p>
           </section>
 
           <section className="space-y-2">

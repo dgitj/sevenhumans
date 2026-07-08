@@ -15,6 +15,8 @@ export default function PrivacyPolicy() {
           <h2 className="text-white font-semibold text-lg">1. Controller</h2>
           <p>
             The controller responsible for this website is:<br />
+          </p>
+          <p className="text-slate-600">
             David Jin<br />
             Belfortstraße 4, 60316 Karlsruhe, Germany<br />
             [email address pending]
